@@ -1,7 +1,3 @@
-<p align="center">
-  <a href="https://oreganlab.org"><img src="docs/assets/ccig_logo.png" alt="Computational Cardiac Imaging Group, MRC Laboratory of Medical Sciences" width="360"></a>
-</p>
-
 # OpenHeart — Cardiac MRI Analysis SDK
 
 An installable SDK for short-axis cardiac MRI: nnU-Net v2 segmentation →
@@ -151,6 +147,8 @@ pytest
 | `openheart/luigi_tasks.py`, `cli.py` | Luigi scheduler, command line |
 
 ## Credits
+
+<a href="https://oreganlab.org"><img src="docs/assets/ccig_logo.png" alt="Computational Cardiac Imaging Group, MRC Laboratory of Medical Sciences" width="240" align="right"></a>
 
 Developed by the [Computational Cardiac Imaging Group](https://oreganlab.org) at the
 MRC Laboratory of Medical Sciences and Imperial College London. Mesh fitting is a
