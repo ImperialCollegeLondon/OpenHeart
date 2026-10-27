@@ -130,15 +130,6 @@ openheart export nnunet reviewed/ -o $nnUNet_raw --dataset-id 3 --name RBHSHare
 Training a model: [docs/training.md](docs/training.md). Plotting a metrics table:
 `examples/plot_metrics.py`.
 
-## ⚠️ Patient data
-
-**No patient data may be committed to this repository** — no images, segmentations,
-meshes, per-case results, logs, or real patient/study identifiers in code or docs.
-Enable the pre-commit check after cloning (see [Development](#development));
-`tools/check_no_patient_data.py` blocks data file types, large files, DICOM UIDs and
-hardcoded personal paths. The same check runs in CI on every push / PR. Tests use
-synthetic phantoms and the public template only.
-
 ## Development
 
 ```bash
