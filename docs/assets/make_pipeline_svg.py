@@ -4,9 +4,11 @@
 Renders one case processed by OpenHeart through its four stages (cine MRI →
 segmentation → fitted template mesh → wall-thickness map) and packs the frames into
 a single SVG that animates with SMIL/CSS only (no scripts, no web fonts), so GitHub
-plays it inside <img>. The README banner uses ACDC patient072 (public dataset):
+plays it inside <img>. The README banner uses ACDC patient072 (public dataset) with the
+segmentation from the cardiac QC agent (slice alignment + apex completion, gpt-5.5 run of
+the AQC dataset); OpenHeart fits the meshes and measures wall thickness:
 
-    openheart run acdc_cases/ -o out/ --model <nnU-Net results folder> --folds 1
+    openheart run agent_fixed_cases/ -o out/ --layout legacy --labels acdc
     python docs/assets/make_pipeline_svg.py out/patient072
 
 Needs the [mesh] extra plus matplotlib and pillow.
