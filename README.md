@@ -7,7 +7,7 @@ myocardial wall thickness), for one case or a whole cohort.
 
 <p align="center">
   <img src="docs/assets/pipeline.svg" alt="OpenHeart pipeline: cine MRI → segmentation → template mesh fitting → measurement" width="100%"><br>
-  <sub>Example case: patient001 from the public <a href="https://www.creatis.insa-lyon.fr/Challenge/acdc/">ACDC</a> dataset, processed end to end by OpenHeart.</sub>
+  <sub>Example case: patient072 from the public <a href="https://www.creatis.insa-lyon.fr/Challenge/acdc/">ACDC</a> dataset, segmented, fitted and measured by OpenHeart.</sub>
 </p>
 
 ## Install
