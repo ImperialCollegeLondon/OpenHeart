@@ -47,7 +47,7 @@ MUTED = "#8b949e"
 
 STAGES = [
     ("Cine MRI", "short-axis, ED ↔ ES"),
-    ("Segment", "nnU-Net v2"),
+    ("Segment", "nnU-Net"),
     ("Fit mesh", "template correspondence"),
     ("Measure", "wall thickness"),
 ]

@@ -1,6 +1,6 @@
 # OpenHeart — Cardiac MRI Analysis SDK
 
-An installable SDK for short-axis cardiac MRI: nnU-Net v2 segmentation →
+An installable SDK for short-axis cardiac MRI: nnU-Net segmentation →
 post-processing (slice realignment, apex completion) → template mesh fitting with
 point correspondence → cardiac metrics (volumes, ejection fraction, LV mass,
 myocardial wall thickness), for one case or a whole cohort.
@@ -75,7 +75,7 @@ dropped, reordered or replaced; a custom step subclasses `oh.Step` and implement
 
 | Step | Adds | Notes |
 |---|---|---|
-| `Segment(model, folds)` | `segs` | nnU-Net v2 in process: model loaded once, no `nnUNet_*` variables or temp folders; output identical to `nnUNetv2_predict` |
+| `Segment(model, folds)` | `segs` | nnU-Net in process: model loaded once, no `nnUNet_*` variables or temp folders; output identical to `nnUNetv2_predict` |
 | `Realign(degree=1)` | updates `images`, `segs` | shifts slices onto a fitted centreline (breath-hold misregistration) |
 | `FillApex(max_slices=2)` | updates `images`, `segs` | closes an open LV apex with tapered myocardium caps |
 | `FitMesh()` | `meshes` | fits the 4DSegment3.0 template; see [docs/mesh.md](docs/mesh.md) |
