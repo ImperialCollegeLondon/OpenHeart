@@ -1,13 +1,13 @@
 # OpenHeart — Cardiac MRI Analysis SDK
 
-An installable SDK for short-axis cardiac MRI: nnU-Net segmentation →
-post-processing (slice realignment, apex completion) → template mesh fitting with
-point correspondence → cardiac metrics (volumes, ejection fraction, LV mass,
-myocardial wall thickness), for one case or a whole cohort.
+An installable SDK for short-axis cardiac MRI in hypertrophic cardiomyopathy (HCM):
+nnU-Net segmentation → post-processing (slice realignment, apex completion) →
+template mesh fitting with point correspondence → cardiac metrics (volumes, ejection
+fraction, LV mass, myocardial wall thickness), for one case or a whole cohort.
 
 <p align="center">
   <img src="docs/assets/pipeline.svg" alt="OpenHeart pipeline: cine MRI → segmentation → template mesh fitting → measurement" width="100%"><br>
-  <sub>Example case: patient072 from the public <a href="https://www.creatis.insa-lyon.fr/Challenge/acdc/">ACDC</a> dataset. Segmentation with slice alignment and apex completion by our QC agent; meshes and wall thickness by OpenHeart.</sub>
+  <sub>Example case from a public dataset. Segmentation corrected by our QC agent; meshes and wall thickness by OpenHeart.</sub>
 </p>
 
 ## Install
@@ -98,10 +98,8 @@ any dataset into the same `Case` and writes results back out.
 |---|---|---|
 | `openheart` (default output) | `image_ED.nii.gz`, `seg_ED.nii.gz`, `meshes/LVmyo_ED.vtk`, `case.json` | 1 LV, 2 myo, 3 RV |
 | `legacy` (default input) | `lvsa_ED.nii.gz` or `lvsa_SR_ED.nii.gz`, `seg_lvsa_SR_ED.nii.gz`, `vtks/F_LVmyo_ED.vtk`, `vtks/W_LVmyo_ED.vtk` | 1 LV, 2 myo, 3 RV |
-| `acdc` (read-only) | ACDC challenge folders (`patientNNN_frameXX[_gt]`, `Info.cfg`) | 1 RV, 2 myo, 3 LV |
-| `mnms2` (read-only) | M&Ms-2 folders (`NNN_SA_ED[_gt].nii.gz`) | 1 LV, 2 myo, 3 RV |
 
-Any layout takes `labels=` to override its convention (`"acdc"`, `"lv=3,myo=2,rv=1"`).
+Any layout takes `labels=` to override its convention (`"lv=3,myo=2,rv=1"`).
 
 ### Resuming
 

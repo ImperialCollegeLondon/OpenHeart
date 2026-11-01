@@ -42,8 +42,8 @@ image. This package replaces that stage with GPU-accelerated PyTorch so it can b
 * **GPU non-rigid fit.** Sub-millimetre surface fit on a V100 in seconds.
 * **Bundled template.** The heart template ships inside the package — clone & go.
 * **Per-vertex features.** Wall thickness, signed distance to template, curvature.
-* **Any label convention.** Point it at ACDC, M&Ms-2, or your own labels via a
-  preset or `LabelMap` — no need to relabel your segmentations first. See
+* **Any label convention.** Point it at your own labels via a label spec or
+  `LabelMap` — no need to relabel your segmentations first. See
   [Configuring labels](#configuring-labels).
 
 ## Relation to 4DSegment3.0
@@ -72,7 +72,7 @@ meshes + features.
 | Implementation | IRTK/MIRTK C++ binaries in a ~10 GB Docker image | pure-Python + **GPU PyTorch**, `pip install` |
 | `snreg` solver | CPU B-spline FFD | GPU cubic B-spline FFD (autograd), ~6.9× faster, equivalent fit |
 | **Output topology** | the released `transform-points` branch could emit meshes whose vertex count/connectivity **varied per subject** | **always the template's exact topology** → vertex *i* is the same anatomy in every case/phase, so cohort analysis needs no remeshing |
-| Label convention | fixed `1=LV,2=myo,3=RV` | configurable preset / `LabelMap` (ACDC, M&Ms-2, custom) |
+| Label convention | fixed `1=LV,2=myo,3=RV` | configurable label spec / `LabelMap` |
 | Wall-thickness tie-break | VTK locator | `cKDTree` — identical except at exact-distance ties (≤0.02 % of myo vertices; [documented](#features)) |
 
 The key **logical** difference is the topology guarantee: 4DSegment3.0 deforms the
@@ -127,7 +127,7 @@ print(ed.metrics["LVepi"])           # {'mean_surf_dist': 0.6, ...}
 ```
 
 > The examples above assume the default 4DSegment label convention
-> (`1=LV, 2=myo, 3=RV`). For ACDC or any other convention, pass `labels=...`
+> (`1=LV, 2=myo, 3=RV`). For any other convention, pass `labels=...`
 > (Python) or `--labels ...` (CLI) — see [Configuring labels](#configuring-labels).
 
 ### Command line
@@ -136,8 +136,8 @@ print(ed.metrics["LVepi"])           # {'mean_surf_dist': 0.6, ...}
 openheart fit --ed seg_lvsa_SR_ED.nii.gz --es seg_lvsa_SR_ES.nii.gz \
               --out out/ --features
 
-# non-default label convention (e.g. ACDC: 1=RV, 2=myo, 3=LV):
-openheart fit --ed seg_ED.nii.gz --out out/ --labels acdc
+# non-default label convention (e.g. 1=RV, 2=myo, 3=LV):
+openheart fit --ed seg_ED.nii.gz --out out/ --labels lv=3,myo=2,rv=1
 ```
 
 ### Features
@@ -166,25 +166,21 @@ does **not** do the deep-learning segmentation step.
 ### Configuring labels
 
 If your segmentation uses a different convention, tell the fitter — no external
-relabelling needed. For example **ACDC** uses `1 = RV, 2 = myo, 3 = LV` (LV/RV
-swapped), so:
+relabelling needed. For example, with LV and RV swapped (`1 = RV, 2 = myo, 3 = LV`):
 
 ```bash
-openheart fit --ed seg_ED.nii.gz --out out/ --labels acdc
+openheart fit --ed seg_ED.nii.gz --out out/ --labels lv=3,myo=2,rv=1
 ```
 
 ```python
 from openheart.mesh import fit_subject, LabelMap
 
-# a preset name…
-fit_subject("seg_ED.nii.gz", out_dir="out/", labels="acdc")
-# …or an explicit mapping (any of these forms work):
+# an explicit mapping (any of these forms work):
 fit_subject("seg_ED.nii.gz", out_dir="out/", labels="lv=3,myo=2,rv=1")
 fit_subject("seg_ED.nii.gz", out_dir="out/", labels=LabelMap(lv=3, myo=2, rv=1))
 ```
 
-Built-in presets: `4dseg` (default, `1=LV,2=myo,3=RV`), `mnms2` (same as 4dseg),
-`acdc` (`1=RV,2=myo,3=LV`). The label spec also accepts a dict
+The default is `4dseg` (`1=LV,2=myo,3=RV`). The label spec also accepts a dict
 (`{"lv":3,"myo":2,"rv":1}`) or positional `"3,2,1"`. Getting this wrong fits the
 LV template to the RV cavity and vice-versa, so set it to match your data.
 
