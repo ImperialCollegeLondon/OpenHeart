@@ -41,7 +41,7 @@ def _run(args) -> int:
     if args.fill_apex:
         steps.append(FillApex())
     if not args.no_mesh:
-        steps.append(FitMesh(device=args.device))
+        steps.append(FitMesh(device=args.device, template=args.template))
     steps.append(Measure(contour_thickness=args.contour_thickness))
 
     cohort = Cohort.load(args.input, layout=_input_layout(args), labels=args.labels)
@@ -108,6 +108,7 @@ def build_parser() -> argparse.ArgumentParser:
     post.add_argument("--realign", action="store_true", help="straighten slice stacks along a fitted centreline")
     post.add_argument("--fill-apex", action="store_true", help="close an open LV apex")
     post.add_argument("--no-mesh", action="store_true", help="skip template mesh fitting (and 3D wall thickness)")
+    post.add_argument("--template", help="mesh template folder (default: the bundled 4DSegment3.0 atlas)")
     post.add_argument("--contour-thickness", action="store_true", help="add 2D wall thickness with AHA segments")
     ex = run.add_argument_group("execution")
     ex.add_argument("--device", default="cuda", help="cuda or cpu")

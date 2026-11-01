@@ -26,6 +26,7 @@ def parse_args(argv=None):
     p.add_argument("--iters", type=int, default=300, help="FFD optimisation iterations.")
     p.add_argument("--control-spacing", type=float, default=20.0, help="FFD control-point spacing (mm).")
     p.add_argument("--device", default="cuda", help="cuda or cpu.")
+    p.add_argument("--template", default=None, help="Template folder (default: the bundled atlas).")
     p.add_argument("--features", action="store_true", help="Also compute wall thickness / curvature / signed distance.")
     p.add_argument("--quiet", action="store_true")
     return p.parse_args(argv)
@@ -45,7 +46,7 @@ def main(argv=None):
     try:
         results = fit_subject(
             args.ed, args.es, out_dir=args.out, labels=args.labels,
-            ffd_config=cfg, verbose=not args.quiet,
+            ffd_config=cfg, template=args.template, verbose=not args.quiet,
         )
     except InsufficientLandmarksError as e:
         # Incomplete segmentation (empty chamber) — report cleanly and exit non-zero
@@ -75,7 +76,7 @@ def main(argv=None):
                 )
             if "LVmyo" in res.meshes:
                 myo = res.meshes["LVmyo"]
-                sd = features.signed_distance_to_template(myo, load_template_mesh("LVmyo", phase))
+                sd = features.signed_distance_to_template(myo, load_template_mesh("LVmyo", phase, args.template))
                 cur = features.mean_curvature(myo, smooth_iters=2)
                 # Carry each scalar on a copy of the LVmyo mesh and vtk2txt-export
                 # it (x y z scalar), matching the original .txt layout.

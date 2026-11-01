@@ -5,6 +5,8 @@ needs no external data — it verifies the pipeline runs and, crucially, that ou
 topology equals the template topology.
 """
 
+import shutil
+
 import numpy as np
 import pytest
 
@@ -227,6 +229,42 @@ def test_configurable_labels_landmarks_equivalence(tmp_path):
     lm_swapped = extract_landmarks(Volume.load(swapped, labels="lv=3,myo=2,rv=1"))
     assert lm_default.shape == lm_swapped.shape == (7, 3)
     assert np.allclose(lm_default, lm_swapped)
+
+
+def _coarse_template(folder):
+    """A template with its own topology: the bundled one with half of its faces."""
+    from openheart.mesh.io.mesh import Mesh
+
+    (folder / "vtks").mkdir(parents=True)
+    shutil.copy(TEMPLATE_SEG_ED, folder / "segmentation_ED.nii.gz")
+    for region in hmf.REGIONS:
+        for phase in ("ED", "ES"):
+            mesh = load_template_mesh(region, phase)
+            used, faces = np.unique(mesh.faces[: len(mesh.faces) // 2], return_inverse=True)
+            coarse = Mesh(verts=mesh.verts[used], faces=faces.reshape(-1, 3))
+            coarse.write(str(folder / "vtks" / f"{region}_{phase}.vtk"))
+    return folder
+
+
+def test_fitmesh_with_custom_template(tmp_path):
+    from openheart import Case, FitMesh, Image
+
+    template = _coarse_template(tmp_path / "template")
+    seg = Image.load(TEMPLATE_SEG_ED)
+    case = FitMesh(iterations=5, device="cpu", template=template)(Case(id="t", segs={"ED": seg}))
+    for region in hmf.REGIONS:
+        expected = load_template_mesh(region, "ED", str(template))
+        assert case.meshes["ED"][region].n_points == expected.n_points < load_template_mesh(region, "ED").n_points
+    assert FitMesh(template=template).signature != FitMesh().signature
+
+
+def test_template_folder_is_checked(tmp_path):
+    from openheart import FitMesh
+
+    with pytest.raises(FileNotFoundError, match="template"):
+        FitMesh(template=tmp_path)
+    with pytest.raises(FileNotFoundError, match="template mesh not found"):
+        load_template_mesh("RV", "ED", str(tmp_path))
 
 
 def test_fitmesh_and_measure_steps(tmp_path):

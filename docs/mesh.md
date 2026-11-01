@@ -216,11 +216,10 @@ precisely so endo/epi/myo need not share vertex counts.) What matters is that wi
 one template the regions are mutually consistent and the ED segmentation matches the
 ED meshes.
 
-> **Swapping in your own template:** the template path is currently fixed to the
-> bundled one (`template.py`), so using a different atlas means pointing the loader
-> at your directory. A `template_dir`/`Template` parameter to make this a
-> first-class, no-code-change option is planned — open an issue or ask if you need
-> it. The unused `landmarks3_ED.vtk` in the bundled `vtks/` is legacy and not read.
+**Swapping in your own template:** pass its folder with `template=` (`fit_subject`,
+`fit_phase`, `oh.FitMesh`) or `--template` (`openheart fit`, `openheart run`). Its
+`segmentation_ED.nii.gz` uses labels `1=LV, 2=myo, 3=RV`. The unused
+`landmarks3_ED.vtk` in the bundled `vtks/` is legacy and not read.
 
 ## Credit & License
 

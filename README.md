@@ -75,10 +75,10 @@ dropped, reordered or replaced; a custom step subclasses `oh.Step` and implement
 
 | Step | Adds | Notes |
 |---|---|---|
-| `Segment(model, folds)` | `segs` | nnU-Net in process: model loaded once, no `nnUNet_*` variables or temp folders; output identical to `nnUNetv2_predict` |
+| `Segment(model, folds)` | `segs` | [any trained nnU-Net model](#segmentation-model) in process: model loaded once, no `nnUNet_*` variables or temp folders; output identical to `nnUNetv2_predict` |
 | `Realign(degree=1)` | updates `images`, `segs` | shifts slices onto a fitted centreline (breath-hold misregistration) |
 | `FillApex(max_slices=2)` | updates `images`, `segs` | closes an open LV apex with tapered myocardium caps |
-| `FitMesh()` | `meshes` | fits the 4DSegment3.0 template; see [docs/mesh.md](docs/mesh.md) |
+| `FitMesh(template=None)` | `meshes` | fits the 4DSegment3.0 template or [your own](#mesh-template); see [docs/mesh.md](docs/mesh.md) |
 | `Measure(contour_thickness=False)` | `metrics`, `features` | volumes, SV, EF, LV mass; 3D wall thickness on the mesh; optional 2D thickness with AHA segments |
 
 ### Metrics
@@ -128,6 +128,70 @@ steps it replaces. One failing case is recorded in `metrics.csv` and does not st
 the run. `--scheduler luigi` runs the same work as [Luigi](https://github.com/spotify/luigi)
 tasks (central scheduler and web UI with `luigi-central`); both schedulers read and
 write the same checkpoints.
+
+## Models and templates
+
+### Segmentation model
+
+Weights are not part of this repository. `Segment` loads a trained nnU-Net v2 model
+from its results folder, the one written by `nnUNetv2_train`:
+
+```
+nnUNetTrainer__nnUNetPlans__2d/
+├── plans.json
+├── dataset.json
+├── fold_0/checkpoint_final.pth
+└── fold_1/checkpoint_final.pth
+```
+
+```python
+oh.Segment("/path/to/nnUNetTrainer__nnUNetPlans__2d", folds=[1])  # one fold
+oh.Segment("/path/to/nnUNetTrainer__nnUNetPlans__2d")             # every fold found, as an ensemble
+oh.Segment("/path/to/nnUNetTrainer__nnUNetPlans__2d", folds=[1],
+           checkpoint="checkpoint_best.pth")                      # another checkpoint file
+```
+
+```bash
+openheart run cases/ -o out/ --model /path/to/nnUNetTrainer__nnUNetPlans__2d \
+    --folds 0 1 --checkpoint checkpoint_best.pth
+```
+
+The model must predict 1 = LV, 2 = myocardium, 3 = RV; its output is not relabelled.
+Changing the model, folds or checkpoint recomputes `Segment` and every later step on
+the next run.
+
+### Mesh template
+
+`FitMesh` uses the bundled 4DSegment3.0 atlas unless it is given another template
+folder:
+
+```python
+oh.FitMesh(template="/path/to/template")
+```
+
+```bash
+openheart run cases/ -o out/ --template /path/to/template
+openheart fit --ed seg_ED.nii.gz --es seg_ES.nii.gz --out out/ --template /path/to/template
+```
+
+A template folder has one VTK PolyData mesh per region and phase, plus an ED
+segmentation with labels 1 = LV, 2 = myocardium, 3 = RV, from which the landmarks for
+the initial alignment are computed:
+
+```
+template/
+├── segmentation_ED.nii.gz
+└── vtks/
+    ├── LVendo_ED.vtk  LVendo_ES.vtk
+    ├── LVepi_ED.vtk   LVepi_ES.vtk
+    ├── LVmyo_ED.vtk   LVmyo_ES.vtk
+    └── RV_ED.vtk      RV_ES.vtk
+```
+
+Fitted meshes take the template's vertex count and connectivity, so meshes are
+comparable vertex by vertex only between cases fitted with the same template. The
+meshes and segmentation of a template must be in the same space. Changing the
+template recomputes `FitMesh` and `Measure` on the next run.
 
 ## Other tools
 

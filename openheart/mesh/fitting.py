@@ -178,6 +178,7 @@ def fit_phase(
     ffd_config: FFDConfig | None = None,
     surface_smooth_sigma: float = 2.0,
     landmark_init=None,
+    template: str | None = None,
     verbose: bool = True,
 ) -> FitResult:
     """Fit all template regions to one segmentation volume (one phase).
@@ -196,10 +197,12 @@ def fit_phase(
     segmentation is smaller / less reliable and its own landmarks drift; ES still
     runs its own surface msrreg-3. The landmark and joint rigids actually used are
     stored on the result (``.landmark_rigid`` / ``.joint_rigid``).
+
+    ``template`` is the folder of a template to fit instead of the bundled one.
     """
     vol = seg_path if isinstance(seg_path, Volume) else Volume.load(seg_path, labels=labels)
     subj_lm = extract_landmarks(vol)  # uses vol.labels
-    tpl_lm = template_landmarks()
+    tpl_lm = template_landmarks(template)
 
     # A missing chamber yields fewer landmarks AND shifts their correspondence with
     # the template (they are appended per chamber in a fixed order), so the rigid
@@ -219,7 +222,7 @@ def fit_phase(
     # per-region FFD both reuse them.
     region_data = {}  # region -> (tpl_mesh, target_verts)
     for region in regions:
-        tpl_mesh = load_template_mesh(region, phase)
+        tpl_mesh = load_template_mesh(region, phase, template)
         try:
             target_v, _ = extract_surface(vol, region, smooth_sigma=surface_smooth_sigma)
         except ValueError as e:
@@ -269,6 +272,7 @@ def fit_subject(
     out_dir: str | None = None,
     labels=None,
     ffd_config: FFDConfig | None = None,
+    template: str | None = None,
     verbose: bool = True,
 ) -> dict:
     """Fit a subject's ED (and optionally ES) segmentation(s).
@@ -280,6 +284,7 @@ def fit_subject(
     out_dir: if given, write F_<region>_<phase>.vtk files there.
     labels : segmentation label convention (``LabelMap`` /
         ``'lv=3,myo=2,rv=1'`` / ``None`` for the 4DSegment default).
+    template: folder of a template to fit instead of the bundled one.
 
     Returns
     -------
@@ -306,7 +311,8 @@ def fit_subject(
         try:
             res = fit_phase(
                 path, phase, labels=labels, ffd_config=ffd_config,
-                landmark_init=(ed_landmark if phase == "ES" else None), verbose=verbose,
+                landmark_init=(ed_landmark if phase == "ES" else None), template=template,
+                verbose=verbose,
             )
         except InsufficientLandmarksError as e:
             # Incomplete segmentation (empty chamber): skip this phase, keep going.
@@ -333,7 +339,7 @@ def fit_subject(
         # clear, catchable failure rather than returning silently-empty results.
         raise InsufficientLandmarksError(
             "/".join(skipped) or "subject",
-            0, len(template_landmarks()),
+            0, len(template_landmarks(template)),
             missing=(),
         )
     return results

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from .case import Case
 from .pipeline import Step
 
@@ -13,16 +15,23 @@ class FitMesh(Step):
     mesh has the template's topology, so vertex *i* is the same anatomy in every
     case. Per-region surface distances go to ``case.info["fit"]``. ES is initialised
     from ED's landmark registration, as in 4DSegment3.0.
+
+    ``template`` is the folder of another template (see docs/mesh.md); by default the
+    bundled 4DSegment3.0 atlas is used.
     """
 
     name = "fit_mesh"
     volatile = ("device",)
     writes = ("meshes",)
 
-    def __init__(self, iterations: int = 100, control_spacing: float = 20.0, device: str = "cuda"):
+    def __init__(self, iterations: int = 100, control_spacing: float = 20.0, device: str = "cuda",
+                 template=None):
+        if template is not None and not (Path(template) / "segmentation_ED.nii.gz").exists():
+            raise FileNotFoundError(f"{template} is not a mesh template folder (no segmentation_ED.nii.gz)")
         self.iterations = iterations
         self.control_spacing = control_spacing
         self.device = device
+        self.template = None if template is None else str(template)
 
     def setup(self):
         from .mesh.backends.ffd_torch import FFDConfig
@@ -39,7 +48,8 @@ class FitMesh(Step):
             raise ValueError(f"case {case.id} has no ED segmentation to fit")
         volumes = {p: Volume(data=s.array.astype("int16"), affine=s.affine, labels=CANONICAL)
                    for p, s in case.segs.items()}
-        results = fit_subject(volumes["ED"], volumes.get("ES"), ffd_config=self._config, verbose=False)
+        results = fit_subject(volumes["ED"], volumes.get("ES"), ffd_config=self._config,
+                              template=self.template, verbose=False)
         for phase, res in results.items():
             case.meshes[phase] = dict(res.meshes)
         case.info["fit"] = {
