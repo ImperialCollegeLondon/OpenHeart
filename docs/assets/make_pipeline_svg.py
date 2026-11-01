@@ -40,7 +40,7 @@ SPIN = 6.0       # seconds per mesh revolution
 N_FRAMES = 72    # mesh frames per revolution (5° apart)
 TILE = 124       # displayed size of each panel image (px)
 SCALE = 2        # render at 2x for sharp display on retina screens
-WT_RANGE = (2.0, 12.0)  # mm, colour scale of the wall-thickness map
+WT_RANGE = (4.0, 20.0)  # mm, colour scale of the wall-thickness map
 
 TEAL, LV, MYO, RV = "#2a9d8f", "#e76f51", "#2a9d8f", "#4c8bf5"
 MUTED = "#8b949e"

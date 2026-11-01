@@ -7,7 +7,7 @@ fraction, LV mass, myocardial wall thickness), for one case or a whole cohort.
 
 <p align="center">
   <img src="docs/assets/pipeline.svg" alt="OpenHeart pipeline: cine MRI → segmentation → template mesh fitting → measurement" width="100%"><br>
-  <sub>Example case from a public dataset. Segmentation corrected by our QC agent; meshes and wall thickness by OpenHeart.</sub>
+  <sub>Example HCM case from a public dataset. Segmentation corrected by our QC agent; meshes and wall thickness by OpenHeart.</sub>
 </p>
 
 ## Install
