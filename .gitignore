@@ -1,0 +1,74 @@
+# ---------------------------------------------------------------------------
+# PATIENT DATA — never commit. tools/check_no_patient_data.py enforces this in
+# the pre-commit hook and CI; these patterns keep it out of `git status`.
+# ---------------------------------------------------------------------------
+*.nii
+*.nii.gz
+*.dcm
+*.dicom
+*.mha
+*.mhd
+*.nrrd
+*.dof
+*.dof.gz
+*.vtk
+*.vtp
+*.vtu
+*.stl
+*.ply
+*.json
+*.csv
+*.tsv
+*.xls
+*.xlsx
+*.log
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.mat
+*.pkl
+*.zip
+
+# Data / output directories
+data/
+temp/
+temp_data/
+tmp/
+results/
+predictions/
+output/
+seg/
+/template/
+volume_analysis_plots/
+wt_distribution_plots/
+*.png
+!docs/**/*.png
+graphify-out/
+
+# Bundled atlas (public 4DSegment3.0 template, not patient data)
+!openheart/mesh/assets/template/*.nii.gz
+!openheart/mesh/assets/template/vtks/*.vtk
+
+# Local tooling / editor config
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+.ipynb_checkpoints

@@ -101,6 +101,23 @@ any dataset into the same `Case` and writes results back out.
 
 Any layout takes `labels=` to override its convention (`"lv=3,myo=2,rv=1"`).
 
+Any other dataset is read by describing its files; `{id}` is the case folder's name
+and `{phase}` is `ED` or `ES` (`{phase_lower}` for `ed`, `es`):
+
+```python
+layout = oh.Layout(name="mine", image=("{id}_SA_{phase}.nii.gz",), seg="{id}_SA_{phase}_gt.nii.gz",
+                   labels="lv=3,myo=2,rv=1", writable=False)
+cohort = oh.Cohort.load("data/", layout=layout)
+```
+
+```bash
+openheart run data/ -o out/ --image '{id}_SA_{phase}.nii.gz' --seg '{id}_SA_{phase}_gt.nii.gz'
+```
+
+If ED and ES are frame numbers that differ per case, add a text file to each case
+folder with `ED: 1` and `ES: 12` lines, pass it as `frames` (`--frames`), and use
+`{frame}` in the patterns, e.g. `{id}_frame{frame:02d}.nii.gz`.
+
 ### Resuming
 
 With an output folder, each case is saved after every step and its `case.json`

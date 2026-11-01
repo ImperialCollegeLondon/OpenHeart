@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openheart"
+dynamic = ["version"]
+description = "Cardiac MRI analysis SDK: segmentation, template mesh fitting and cardiac metrics"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "Imperial College London" }]
+keywords = ["cardiac", "MRI", "segmentation", "nnU-Net", "mesh", "registration"]
+
+# The core (data model, layouts, pipeline runner, post-processing, volumes) stays
+# light; each heavy stack is an opt-in extra, imported only when its step runs.
+dependencies = [
+    "numpy",
+    "scipy",
+    "nibabel",
+    "pandas",
+]
+
+[project.optional-dependencies]
+seg = ["torch", "nnunetv2>=2.0"]              # Segment
+mesh = ["torch", "scikit-image", "vtk"]       # FitMesh, 3D wall thickness, mesh files
+contour = ["opencv-python-headless"]          # Measure(contour_thickness=True)
+luigi = ["luigi"]                             # scheduler="luigi"
+hub = ["huggingface_hub"]                     # published models by name
+gpu = ["pytorch3d"]                           # faster mesh fitting; build per docs/mesh.md
+viz = ["pyvista"]
+plot = ["matplotlib"]                         # examples/plot_metrics.py
+dev = ["pytest"]
+all = ["openheart[seg,mesh,contour,luigi,hub,plot]"]
+
+[project.scripts]
+openheart = "openheart.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/ImperialCollegeLondon/OpenHeart"
+
+[tool.setuptools.dynamic]
+version = { attr = "openheart.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["openheart*"]
+
+[tool.setuptools.package-data]
+"openheart.mesh" = ["assets/template/*.nii.gz", "assets/template/vtks/*.vtk"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
