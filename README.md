@@ -14,7 +14,7 @@ fraction, LV mass, myocardial wall thickness), for one case or a whole cohort.
 
 ```bash
 git clone https://github.com/ImperialCollegeLondon/OpenHeart && cd OpenHeart
-pip install -e ".[seg,mesh]"     # segmentation + mesh fitting
+pip install -e ".[seg,mesh,hub]"     # segmentation (with the published model) + mesh fitting
 ```
 
 The core (data model, pipeline runner, post-processing, volumes) needs only numpy,
@@ -32,10 +32,12 @@ scipy, nibabel and pandas. Heavy stacks are extras, imported only when their ste
 ## Quick start
 
 ```bash
-openheart run cases/ -o out/ \
-    --model /path/to/Dataset003_RBHSHare/nnUNetTrainer__nnUNetPlans__2d --folds 1 \
-    --realign --jobs 4
+openheart run cases/ -o out/ --model hcm --realign --jobs 4
 ```
+
+`--model hcm` is the published HCM segmentation model, downloaded from
+[Hugging Face](https://huggingface.co/ImperialCollegeLondon/OpenHeart) on first use;
+[your own nnU-Net model](#segmentation-model) works the same way.
 
 `cases/` holds one folder per subject with `lvsa_ED.nii.gz` / `lvsa_ES.nii.gz`
 (nested site or batch folders are fine). `out/` gets one folder per case plus
@@ -48,7 +50,7 @@ and it continues where it stopped.
 import openheart as oh
 
 pipe = oh.Pipeline([
-    oh.Segment("/path/to/nnUNetTrainer__nnUNetPlans__2d", folds=[1]),
+    oh.Segment("hcm"),
     oh.Realign(),
     oh.FillApex(),
     oh.FitMesh(),
@@ -75,7 +77,7 @@ dropped, reordered or replaced; a custom step subclasses `oh.Step` and implement
 
 | Step | Adds | Notes |
 |---|---|---|
-| `Segment(model, folds)` | `segs` | [any trained nnU-Net model](#segmentation-model) in process: model loaded once, no `nnUNet_*` variables or temp folders; output identical to `nnUNetv2_predict` |
+| `Segment(model, folds)` | `segs` | the published `"hcm"` model or [any trained nnU-Net model](#segmentation-model), in process: model loaded once, no `nnUNet_*` variables or temp folders; output identical to `nnUNetv2_predict` |
 | `Realign(degree=1)` | updates `images`, `segs` | shifts slices onto a fitted centreline (breath-hold misregistration) |
 | `FillApex(max_slices=2)` | updates `images`, `segs` | closes an open LV apex with tapered myocardium caps |
 | `FitMesh(template=None)` | `meshes` | fits the 4DSegment3.0 template or [your own](#mesh-template); see [docs/mesh.md](docs/mesh.md) |
@@ -133,8 +135,19 @@ write the same checkpoints.
 
 ### Segmentation model
 
-Weights are not part of this repository. `Segment` loads a trained nnU-Net v2 model
-from its results folder, the one written by `nnUNetv2_train`:
+Weights are not part of this repository. `Segment("hcm")` (`--model hcm`) uses the
+published HCM model: nnU-Net, 2d, trained on short-axis cine of HCM patients
+([model card](https://huggingface.co/ImperialCollegeLondon/OpenHeart)). It is
+downloaded on first use (`hub` extra) and all its folds are averaged unless `folds`
+is given; only the folds used are downloaded.
+
+```python
+oh.Segment("hcm")             # every fold, as an ensemble
+oh.Segment("hcm", folds=[1])  # one fold, faster
+```
+
+`Segment` also loads any trained nnU-Net v2 model from its results folder, the one
+written by `nnUNetv2_train`:
 
 ```
 nnUNetTrainer__nnUNetPlans__2d/

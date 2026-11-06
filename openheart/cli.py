@@ -101,7 +101,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--out-layout", default="openheart", choices=["openheart", "legacy"],
                      help="output layout; 'legacy' is what the QC app reads (default: openheart)")
     seg = run.add_argument_group("segmentation (runs when --model is given)")
-    seg.add_argument("--model", help="nnU-Net results folder (…/nnUNetTrainer__nnUNetPlans__2d) or model name")
+    seg.add_argument("--model", help="published model name (hcm) or nnU-Net results folder (…/nnUNetTrainer__nnUNetPlans__2d)")
     seg.add_argument("--folds", nargs="+", help="folds to ensemble (default: all found)")
     seg.add_argument("--checkpoint", default="checkpoint_final.pth")
     post = run.add_argument_group("post-processing and measurement")

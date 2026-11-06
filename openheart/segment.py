@@ -36,11 +36,11 @@ class Segmenter:
                  tile_step_size=0.5, use_mirroring=True):
         import torch
 
-        self.model_dir = resolve_model(model)
+        folds = None if folds is None else tuple(int(f) if f != "all" else f for f in folds)
+        self.model_dir = resolve_model(model, folds, checkpoint)
         self.device = torch.device(device if device != "cuda" or torch.cuda.is_available() else "cpu")
         self.tile_step_size = tile_step_size
         self.use_mirroring = use_mirroring
-        folds = None if folds is None else tuple(int(f) if f != "all" else f for f in folds)
         # nnunetv2 prints warnings about unset nnUNet_* path variables on import; inference
         # in process does not use them, so keep that noise out of the user's console.
         with contextlib.redirect_stdout(io.StringIO()):
@@ -150,7 +150,8 @@ class _Nnunet20:
 class Segment(Step):
     """Segment every phase image of a case with an nnU-Net model.
 
-    ``model`` is a registered model name or the nnU-Net training output folder
+    ``model`` is a published model name (``"hcm"``, downloaded from the Hugging Face Hub on
+    first use) or the nnU-Net training output folder
     (``.../Dataset003_RBHSHare/nnUNetTrainer__nnUNetPlans__2d``). ``folds=None`` uses
     every fold found (an ensemble); ``folds=[1]`` reproduces a single-fold run.
     """
