@@ -2,7 +2,8 @@
 
 Per short-axis slice, the distance from each endocardial contour point to the
 nearest epicardial contour point; slices are split into basal / mid / apical
-thirds and points assigned to AHA segments relative to the septum.
+thirds and points assigned to AHA segments in the standard numbering
+(segment 1 anterior, counting towards the septum).
 
 Adapted from Wenjia Bai's ``cardiac_utils.py`` (ukbb_cardiac, Copyright 2019,
 Apache License 2.0). Requires OpenCV (``pip install openheart[contour]``).
@@ -121,7 +122,11 @@ def _aha_parts(seg, affine):
 def _aha_segment(point, lv_centre, axes, part):
     d = point - lv_centre
     d = d - np.dot(d, axes["apex_to_base"]) * axes["apex_to_base"]
-    angle = math.degrees(math.atan2(np.dot(d, axes["inf_to_ant"]), np.dot(d, axes["lv_to_sep"]))) % 360
+    # Angle from the anterior direction (0 deg) towards the septum (+90 deg), as in
+    # ukbb_cardiac: increasing angle runs anterior -> septal -> inferior -> lateral,
+    # the standard AHA numbering (1 anterior, 2 anteroseptal, 3 inferoseptal,
+    # 4 inferior, 5 inferolateral, 6 anterolateral; apical 13 ant, 14 sep, 15 inf, 16 lat).
+    angle = math.degrees(math.atan2(np.dot(d, axes["lv_to_sep"]), np.dot(d, axes["inf_to_ant"]))) % 360
     if part == "basal":
         start, n_segs, width = 1, 6, 60
     elif part == "mid":
@@ -130,7 +135,8 @@ def _aha_segment(point, lv_centre, axes, part):
         start, n_segs, width = 13, 4, 90
     else:
         return 17
-    return start + int(((angle + 30) % 360) / width) % n_segs
+    # Centre segment 1/7/13 on anterior: shift by half a segment width.
+    return start + int(((angle + width / 2) % 360) / width) % n_segs
 
 
 def wall_thickness(seg: np.ndarray, affine: np.ndarray) -> dict:
